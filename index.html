@@ -159,109 +159,628 @@
         // --- Song Data ---
         const songs = [
             {
-                title: "Creative Minds",
-                artist: "RoyaltyFreeMusic",
-                url: "https://www.bensound.com/bensound-music/bensound-creativeminds.mp3",
+                title: "Raise the Banner",
+                artist: "?",
+                url: "https://github.com/CoryBouchard/html5-rhythm-game/blob/main/RaisetheBanner.mp3",
                 bpm: 85,
                 beatmap: [
-                    { time: 2.8, lane: 0 }, { time: 3.5, lane: 1 }, { time: 4.2, lane: 2 }, { time: 4.9, lane: 3 },
-                    { time: 5.6, lane: 0 }, { time: 5.95, lane: 1 }, { time: 6.3, lane: 0 }, { time: 6.65, lane: 1 },
-                    { time: 7.0, lane: 2 }, { time: 7.35, lane: 3 }, { time: 7.7, lane: 2 }, { time: 8.05, lane: 3 },
-                    { time: 8.4, lane: 0 }, { time: 9.1, lane: 2 }, { time: 9.8, lane: 1 }, { time: 10.5, lane: 3 },
-                    { time: 11.2, lane: 0 }, { time: 11.2, lane: 3 }, { time: 11.9, lane: 1 }, { time: 11.9, lane: 2 },
-                    { time: 12.6, lane: 0 }, { time: 12.95, lane: 1 }, { time: 13.3, lane: 2 }, { time: 13.65, lane: 3 },
-                    { time: 14.0, lane: 0 }, { time: 14.175, lane: 1 }, { time: 14.35, lane: 2 }, { time: 14.525, lane: 3 },
-                    { time: 14.7, lane: 0 }, { time: 14.875, lane: 1 }, { time: 15.05, lane: 2 }, { time: 15.225, lane: 3 },
-                    { time: 15.4, lane: 0 }, { time: 16.1, lane: 1 }, { time: 16.8, lane: 2 }, { time: 17.5, lane: 3 },
-                    { time: 18.2, lane: 0 }, { time: 18.2, lane: 1 },
-                    { time: 19.6, lane: 2 }, { time: 19.6, lane: 3 },
-                    { time: 21.0, lane: 0 }, { time: 21.35, lane: 1 }, { time: 21.7, lane: 2 }, { time: 22.05, lane: 3 },
-                    { time: 22.4, lane: 0 }, { time: 22.4, lane: 3 }, { time: 23.1, lane: 1 }, { time: 23.1, lane: 2 },
-                    { time: 23.8, lane: 0 }, { time: 24.5, lane: 2 }, { time: 25.2, lane: 1 }, { time: 25.9, lane: 3 },
-                    { time: 26.6, lane: 0 }, { time: 26.6, lane: 1 }, { time: 27.3, lane: 2 }, { time: 27.3, lane: 3 },
-                    { time: 28.0, lane: 0 }, { time: 28.35, lane: 2 }, { time: 28.7, lane: 0 }, { time: 29.05, lane: 2 },
-                    { time: 29.4, lane: 1 }, { time: 29.75, lane: 3 }, { time: 30.1, lane: 1 }, { time: 30.45, lane: 3 },
-                    { time: 30.8, lane: 0 },
-                    { time: 31.5, lane: 3 },
-                    { time: 32.2, lane: 1 },
-                    { time: 32.9, lane: 2 },
-                    { time: 33.6, lane: 0 }, { time: 33.95, lane: 1 }, { time: 34.3, lane: 2 }, { time: 34.65, lane: 3 },
-                    { time: 35.0, lane: 3 }, { time: 35.35, lane: 2 }, { time: 35.7, lane: 1 }, { time: 36.05, lane: 0 },
-                    { time: 36.4, lane: 0 }, { time: 36.575, lane: 1 }, { time: 36.75, lane: 0 }, { time: 36.925, lane: 1 },
-                    { time: 37.1, lane: 2 }, { time: 37.275, lane: 3 }, { time: 37.45, lane: 2 }, { time: 37.625, lane: 3 },
-                    { time: 37.8, lane: 0 }, { time: 37.8, lane: 2 },
-                    { time: 38.5, lane: 1 }, { time: 38.5, lane: 3 },
-                    { time: 39.2, lane: 0 }, { time: 39.2, lane: 3 },
-                    { time: 39.9, lane: 1 }, { time: 39.9, lane: 2 },
-                    { time: 42.0, lane: 0 }, { time: 42.7, lane: 1 }, { time: 43.4, lane: 2 }, { time: 44.1, lane: 3 },
-                    { time: 44.8, lane: 0 }, { time: 45.15, lane: 2 }, { time: 45.5, lane: 0 }, { time: 45.85, lane: 2 },
-                    { time: 46.2, lane: 1 }, { time: 46.55, lane: 3 }, { time: 46.9, lane: 1 }, { time: 47.25, lane: 3 },
-                    { time: 47.6, lane: 0 }, { time: 47.95, lane: 1 }, { time: 48.3, lane: 2 }, { time: 48.65, lane: 3 },
-                    { time: 49.0, lane: 0 }, { time: 49.0, lane: 1 }, { time: 49.7, lane: 2 }, { time: 49.7, lane: 3 },
-                    { time: 50.4, lane: 0 }, { time: 50.75, lane: 1 }, { time: 51.1, lane: 0 }, { time: 51.45, lane: 1 },
-                    { time: 51.8, lane: 2 }, { time: 52.15, lane: 3 }, { time: 52.5, lane: 2 }, { time: 52.85, lane: 3 },
-                    { time: 53.2, lane: 0 }, { time: 53.2, lane: 2 },
-                    { time: 53.9, lane: 1 }, { time: 53.9, lane: 3 },
-                    { time: 54.6, lane: 0 }, { time: 55.3, lane: 1 }, { time: 56.0, lane: 2 }, { time: 56.7, lane: 3 },
-                    { time: 57.4, lane: 0 }, { time: 57.75, lane: 1 }, { time: 58.1, lane: 2 }, { time: 58.45, lane: 3 },
-                    { time: 58.8, lane: 0 }, { time: 58.8, lane: 3 },
-                    { time: 59.5, lane: 1 }, { time: 59.5, lane: 2 },
-                    { time: 60.2, lane: 0 }, { time: 60.9, lane: 2 }, { time: 61.6, lane: 1 }, { time: 62.3, lane: 3 },
-                    { time: 63.0, lane: 0 }, { time: 63.35, lane: 1 }, { time: 63.7, lane: 0 }, { time: 64.05, lane: 1 },
-                    { time: 64.4, lane: 2 }, { time: 64.75, lane: 3 }, { time: 65.1, lane: 2 }, { time: 65.45, lane: 3 },
-                    { time: 65.8, lane: 0 }, { time: 66.5, lane: 1 }, { time: 67.2, lane: 2 }, { time: 67.9, lane: 3 },
-                    { time: 68.6, lane: 0 }, { time: 68.6, lane: 2 }, { time: 69.3, lane: 1 }, { time: 69.3, lane: 3 },
-                    { time: 70.0, lane: 0 }, { time: 70.35, lane: 1 }, { time: 70.7, lane: 2 }, { time: 71.05, lane: 3 },
-                    { time: 71.4, lane: 0 }, { time: 71.4, lane: 3 },
-                    { time: 72.1, lane: 1 }, { time: 72.1, lane: 2 },
-                    { time: 72.8, lane: 0 }, { time: 73.5, lane: 2 }, { time: 74.2, lane: 1 }, { time: 74.9, lane: 3 },
-                    { time: 75.6, lane: 0 }, { time: 75.95, lane: 1 }, { time: 76.3, lane: 0 }, { time: 76.65, lane: 1 },
-                    { time: 77.0, lane: 2 }, { time: 77.35, lane: 3 }, { time: 77.7, lane: 2 }, { time: 78.05, lane: 3 },
-                    { time: 78.4, lane: 0 }, { time: 79.1, lane: 1 }, { time: 79.8, lane: 2 }, { time: 80.5, lane: 3 },
-                    { time: 81.2, lane: 0 }, { time: 81.2, lane: 1 }, { time: 81.9, lane: 2 }, { time: 81.9, lane: 3 },
-                    { time: 82.6, lane: 0 }, { time: 82.95, lane: 1 }, { time: 83.3, lane: 2 }, { time: 83.65, lane: 3 },
-                    { time: 84.0, lane: 0 }, { time: 84.0, lane: 3 },
-                    { time: 84.7, lane: 1 }, { time: 84.7, lane: 2 },
-                    { time: 85.4, lane: 0 }, { time: 86.1, lane: 2 }, { time: 86.8, lane: 1 }, { time: 87.5, lane: 3 },
-                    { time: 88.2, lane: 0 }, { time: 88.55, lane: 1 }, { time: 88.9, lane: 0 }, { time: 89.25, lane: 1 },
-                    { time: 89.6, lane: 2 }, { time: 89.95, lane: 3 }, { time: 90.3, lane: 2 }, { time: 90.65, lane: 3 },
-                    { time: 91.0, lane: 0 }, { time: 91.7, lane: 1 }, { time: 92.4, lane: 2 }, { time: 93.1, lane: 3 },
-                    { time: 93.8, lane: 0 }, { time: 93.8, lane: 2 }, { time: 94.5, lane: 1 }, { time: 94.5, lane: 3 },
-                    { time: 95.2, lane: 0 }, { time: 95.55, lane: 1 }, { time: 95.9, lane: 2 }, { time: 96.25, lane: 3 },
-                    { time: 96.6, lane: 0 }, { time: 96.6, lane: 3 },
-                    { time: 97.3, lane: 1 }, { time: 97.3, lane: 2 },
-                    { time: 98.0, lane: 0 }, { time: 98.7, lane: 2 }, { time: 99.4, lane: 1 }, { time: 100.1, lane: 3 },
-                    { time: 100.8, lane: 0 }, { time: 101.15, lane: 1 }, { time: 101.5, lane: 0 }, { time: 101.85, lane: 1 },
-                    { time: 102.2, lane: 2 }, { time: 102.55, lane: 3 }, { time: 102.9, lane: 2 }, { time: 103.25, lane: 3 },
-                    { time: 103.6, lane: 0 }, { time: 104.3, lane: 1 }, { time: 105.0, lane: 2 }, { time: 105.7, lane: 3 },
-                    { time: 106.4, lane: 0 }, { time: 106.4, lane: 1 }, { time: 107.1, lane: 2 }, { time: 107.1, lane: 3 },
-                    { time: 107.8, lane: 0 }, { time: 108.15, lane: 1 }, { time: 108.5, lane: 2 }, { time: 108.85, lane: 3 },
-                    { time: 109.2, lane: 0 }, { time: 109.2, lane: 3 },
-                    { time: 109.9, lane: 1 }, { time: 109.9, lane: 2 },
-                    { time: 110.6, lane: 0 }, { time: 111.3, lane: 2 }, { time: 112.0, lane: 1 }, { time: 112.7, lane: 3 },
-                    { time: 113.4, lane: 0 }, { time: 113.75, lane: 1 }, { time: 114.1, lane: 0 }, { time: 114.45, lane: 1 },
-                    { time: 114.8, lane: 2 }, { time: 115.15, lane: 3 }, { time: 115.5, lane: 2 }, { time: 115.85, lane: 3 },
-                    { time: 116.2, lane: 0 }, { time: 116.9, lane: 1 }, { time: 117.6, lane: 2 }, { time: 118.3, lane: 3 },
-                    { time: 119.0, lane: 0 }, { time: 119.0, lane: 2 }, { time: 119.7, lane: 1 }, { time: 119.7, lane: 3 },
-                    { time: 120.4, lane: 0 }, { time: 120.75, lane: 1 }, { time: 121.1, lane: 2 }, { time: 121.45, lane: 3 },
-                    { time: 121.8, lane: 0 }, { time: 121.8, lane: 3 },
-                    { time: 122.5, lane: 1 }, { time: 122.5, lane: 2 },
-                    { time: 123.2, lane: 0 }, { time: 123.9, lane: 2 }, { time: 124.6, lane: 1 }, { time: 125.3, lane: 3 },
-                    { time: 126.0, lane: 0 }, { time: 126.35, lane: 1 }, { time: 126.7, lane: 0 }, { time: 127.05, lane: 1 },
-                    { time: 127.4, lane: 2 }, { time: 127.75, lane: 3 }, { time: 128.1, lane: 2 }, { time: 128.45, lane: 3 },
-                    { time: 128.8, lane: 0 }, { time: 129.5, lane: 1 }, { time: 130.2, lane: 2 }, { time: 130.9, lane: 3 },
-                    { time: 131.6, lane: 0 }, { time: 131.6, lane: 1 }, { time: 132.3, lane: 2 }, { time: 132.3, lane: 3 },
-                    { time: 133.0, lane: 0 }, { time: 133.35, lane: 1 }, { time: 133.7, lane: 2 }, { time: 134.05, lane: 3 },
-                    { time: 134.4, lane: 0 }, { time: 134.4, lane: 3 },
-                    { time: 135.1, lane: 1 }, { time: 135.1, lane: 2 },
-                    { time: 135.8, lane: 0 }, { time: 136.5, lane: 2 }, { time: 137.2, lane: 1 }, { time: 137.9, lane: 3 },
-                    { time: 138.6, lane: 0 }, { time: 139.3, lane: 1 }, { time: 140.0, lane: 2 }, { time: 140.7, lane: 3 },
-                    { time: 141.4, lane: 0 }, { time: 141.4, lane: 1 }, { time: 141.4, lane: 2 }, { time: 141.4, lane: 3 },
-                ]
+    {
+        "time": 0,
+        "lane": 0
+    },
+    {
+        "time": 1.643,
+        "lane": 1
+    },
+    {
+        "time": 1.664,
+        "lane": 2
+    },
+    {
+        "time": 2.304,
+        "lane": 3
+    },
+    {
+        "time": 2.517,
+        "lane": 0
+    },
+    {
+        "time": 3.605,
+        "lane": 1
+    },
+    {
+        "time": 4.032,
+        "lane": 2
+    },
+    {
+        "time": 4.693,
+        "lane": 3
+    },
+    {
+        "time": 5.333,
+        "lane": 0
+    },
+    {
+        "time": 5.568,
+        "lane": 1
+    },
+    {
+        "time": 5.781,
+        "lane": 2
+    },
+    {
+        "time": 5.995,
+        "lane": 3
+    },
+    {
+        "time": 7.957,
+        "lane": 0
+    },
+    {
+        "time": 8.832,
+        "lane": 1
+    },
+    {
+        "time": 9.259,
+        "lane": 2
+    },
+    {
+        "time": 9.28,
+        "lane": 3
+    },
+    {
+        "time": 10.133,
+        "lane": 0
+    },
+    {
+        "time": 11.221,
+        "lane": 1
+    },
+    {
+        "time": 12.053,
+        "lane": 2
+    },
+    {
+        "time": 12.224,
+        "lane": 3
+    },
+    {
+        "time": 12.331,
+        "lane": 0
+    },
+    {
+        "time": 12.523,
+        "lane": 1
+    },
+    {
+        "time": 13.611,
+        "lane": 2
+    },
+    {
+        "time": 13.824,
+        "lane": 3
+    },
+    {
+        "time": 14.464,
+        "lane": 0
+    },
+    {
+        "time": 14.699,
+        "lane": 1
+    },
+    {
+        "time": 14.72,
+        "lane": 2
+    },
+    {
+        "time": 18.816,
+        "lane": 3
+    },
+    {
+        "time": 22.08,
+        "lane": 0
+    },
+    {
+        "time": 22.741,
+        "lane": 1
+    },
+    {
+        "time": 22.955,
+        "lane": 2
+    },
+    {
+        "time": 23.403,
+        "lane": 3
+    },
+    {
+        "time": 24.491,
+        "lane": 0
+    },
+    {
+        "time": 25.131,
+        "lane": 1
+    },
+    {
+        "time": 26.005,
+        "lane": 2
+    },
+    {
+        "time": 28.395,
+        "lane": 3
+    },
+    {
+        "time": 33.173,
+        "lane": 0
+    },
+    {
+        "time": 33.387,
+        "lane": 1
+    },
+    {
+        "time": 33.6,
+        "lane": 2
+    },
+    {
+        "time": 36.437,
+        "lane": 3
+    },
+    {
+        "time": 47.765,
+        "lane": 0
+    },
+    {
+        "time": 50.347,
+        "lane": 1
+    },
+    {
+        "time": 50.56,
+        "lane": 2
+    },
+    {
+        "time": 55.36,
+        "lane": 3
+    },
+    {
+        "time": 58.837,
+        "lane": 0
+    },
+    {
+        "time": 61.461,
+        "lane": 1
+    },
+    {
+        "time": 63.381,
+        "lane": 2
+    },
+    {
+        "time": 63.808,
+        "lane": 3
+    },
+    {
+        "time": 64.021,
+        "lane": 0
+    },
+    {
+        "time": 64.256,
+        "lane": 1
+    },
+    {
+        "time": 65.131,
+        "lane": 2
+    },
+    {
+        "time": 72.981,
+        "lane": 3
+    },
+    {
+        "time": 74.688,
+        "lane": 0
+    },
+    {
+        "time": 74.731,
+        "lane": 1
+    },
+    {
+        "time": 76.651,
+        "lane": 2
+    },
+    {
+        "time": 76.864,
+        "lane": 3
+    },
+    {
+        "time": 77.739,
+        "lane": 0
+    },
+    {
+        "time": 77.952,
+        "lane": 1
+    },
+    {
+        "time": 78.165,
+        "lane": 2
+    },
+    {
+        "time": 78.4,
+        "lane": 3
+    },
+    {
+        "time": 79.275,
+        "lane": 0
+    },
+    {
+        "time": 79.701,
+        "lane": 1
+    },
+    {
+        "time": 81.877,
+        "lane": 2
+    },
+    {
+        "time": 82.325,
+        "lane": 3
+    },
+    {
+        "time": 83.179,
+        "lane": 0
+    },
+    {
+        "time": 83.627,
+        "lane": 1
+    },
+    {
+        "time": 85.355,
+        "lane": 2
+    },
+    {
+        "time": 86.229,
+        "lane": 3
+    },
+    {
+        "time": 86.656,
+        "lane": 0
+    },
+    {
+        "time": 87.531,
+        "lane": 1
+    },
+    {
+        "time": 91.008,
+        "lane": 2
+    },
+    {
+        "time": 92.757,
+        "lane": 3
+    },
+    {
+        "time": 93.184,
+        "lane": 0
+    },
+    {
+        "time": 93.611,
+        "lane": 1
+    },
+    {
+        "time": 94.507,
+        "lane": 2
+    },
+    {
+        "time": 96.661,
+        "lane": 3
+    },
+    {
+        "time": 99.925,
+        "lane": 0
+    },
+    {
+        "time": 101.419,
+        "lane": 1
+    },
+    {
+        "time": 101.973,
+        "lane": 2
+    },
+    {
+        "time": 102.293,
+        "lane": 3
+    },
+    {
+        "time": 102.507,
+        "lane": 0
+    },
+    {
+        "time": 102.528,
+        "lane": 1
+    },
+    {
+        "time": 103.189,
+        "lane": 2
+    },
+    {
+        "time": 104.043,
+        "lane": 3
+    },
+    {
+        "time": 104.469,
+        "lane": 0
+    },
+    {
+        "time": 107.541,
+        "lane": 1
+    },
+    {
+        "time": 110.144,
+        "lane": 2
+    },
+    {
+        "time": 111.445,
+        "lane": 3
+    },
+    {
+        "time": 111.872,
+        "lane": 0
+    },
+    {
+        "time": 112.32,
+        "lane": 1
+    },
+    {
+        "time": 114.283,
+        "lane": 2
+    },
+    {
+        "time": 115.563,
+        "lane": 3
+    },
+    {
+        "time": 115.776,
+        "lane": 0
+    },
+    {
+        "time": 115.989,
+        "lane": 1
+    },
+    {
+        "time": 116.203,
+        "lane": 2
+    },
+    {
+        "time": 116.437,
+        "lane": 3
+    },
+    {
+        "time": 119.019,
+        "lane": 0
+    },
+    {
+        "time": 119.04,
+        "lane": 1
+    },
+    {
+        "time": 122.517,
+        "lane": 2
+    },
+    {
+        "time": 122.731,
+        "lane": 3
+    },
+    {
+        "time": 122.944,
+        "lane": 0
+    },
+    {
+        "time": 123.157,
+        "lane": 1
+    },
+    {
+        "time": 123.456,
+        "lane": 2
+    },
+    {
+        "time": 123.605,
+        "lane": 3
+    },
+    {
+        "time": 124.032,
+        "lane": 0
+    },
+    {
+        "time": 124.053,
+        "lane": 1
+    },
+    {
+        "time": 124.48,
+        "lane": 2
+    },
+    {
+        "time": 124.907,
+        "lane": 3
+    },
+    {
+        "time": 124.928,
+        "lane": 0
+    },
+    {
+        "time": 125.333,
+        "lane": 1
+    },
+    {
+        "time": 125.355,
+        "lane": 2
+    },
+    {
+        "time": 125.781,
+        "lane": 3
+    },
+    {
+        "time": 126.229,
+        "lane": 0
+    },
+    {
+        "time": 126.656,
+        "lane": 1
+    },
+    {
+        "time": 127.531,
+        "lane": 2
+    },
+    {
+        "time": 130.347,
+        "lane": 3
+    },
+    {
+        "time": 130.581,
+        "lane": 0
+    },
+    {
+        "time": 131.883,
+        "lane": 1
+    },
+    {
+        "time": 132.309,
+        "lane": 2
+    },
+    {
+        "time": 132.736,
+        "lane": 3
+    },
+    {
+        "time": 133.184,
+        "lane": 0
+    },
+    {
+        "time": 134.037,
+        "lane": 1
+    },
+    {
+        "time": 135.787,
+        "lane": 2
+    },
+    {
+        "time": 136.235,
+        "lane": 3
+    },
+    {
+        "time": 136.661,
+        "lane": 0
+    },
+    {
+        "time": 137.515,
+        "lane": 1
+    },
+    {
+        "time": 137.963,
+        "lane": 2
+    },
+    {
+        "time": 139.264,
+        "lane": 3
+    },
+    {
+        "time": 143.168,
+        "lane": 0
+    },
+    {
+        "time": 143.275,
+        "lane": 1
+    },
+    {
+        "time": 143.381,
+        "lane": 2
+    },
+    {
+        "time": 143.701,
+        "lane": 3
+    },
+    {
+        "time": 144.021,
+        "lane": 0
+    },
+    {
+        "time": 144.256,
+        "lane": 1
+    },
+    {
+        "time": 144.491,
+        "lane": 2
+    },
+    {
+        "time": 144.917,
+        "lane": 3
+    },
+    {
+        "time": 145.344,
+        "lane": 0
+    },
+    {
+        "time": 146.219,
+        "lane": 1
+    },
+    {
+        "time": 147.52,
+        "lane": 2
+    },
+    {
+        "time": 147.968,
+        "lane": 3
+    },
+    {
+        "time": 148.416,
+        "lane": 0
+    },
+    {
+        "time": 148.843,
+        "lane": 1
+    },
+    {
+        "time": 149.269,
+        "lane": 2
+    },
+    {
+        "time": 150.571,
+        "lane": 3
+    },
+    {
+        "time": 151.445,
+        "lane": 0
+    },
+    {
+        "time": 152.747,
+        "lane": 1
+    },
+    {
+        "time": 153.173,
+        "lane": 2
+    },
+    {
+        "time": 157.077,
+        "lane": 3
+    },
+    {
+        "time": 157.717,
+        "lane": 0
+    },
+    {
+        "time": 157.739,
+        "lane": 1
+    },
+    {
+        "time": 157.952,
+        "lane": 2
+    },
+    {
+        "time": 158.165,
+        "lane": 3
+    },
+    {
+        "time": 158.187,
+        "lane": 0
+    }
+]
             },
             {
                 title: "Play the Game",
-                artist: "You!",
+                artist: "?",
                 url: "https://raw.githubusercontent.com/CoryBouchard/html5-rhythm-game/main/PlaytheGame.mp3",
                 bpm: 150, // You might need to adjust this
                 beatmap: [{"time":0,"lane":0},{"time":0.256,"lane":1},{"time":0.277,"lane":2},{"time":0.299,"lane":3},{"time":0.32,"lane":0},{"time":6.571,"lane":1},{"time":6.976,"lane":2},{"time":7.36,"lane":3},{"time":7.723,"lane":0},{"time":7.765,"lane":1},{"time":8.192,"lane":2},{"time":8.939,"lane":3},{"time":9.301,"lane":0},{"time":9.344,"lane":1},{"time":9.728,"lane":2},{"time":9.749,"lane":3},{"time":10.133,"lane":0},{"time":10.475,"lane":1},{"time":10.517,"lane":2},{"time":10.901,"lane":3},{"time":11.307,"lane":0},{"time":11.328,"lane":1},{"time":12.075,"lane":2},{"time":12.096,"lane":3},{"time":12.459,"lane":0},{"time":12.48,"lane":1},{"time":12.821,"lane":2},{"time":12.864,"lane":3},{"time":12.885,"lane":0},{"time":13.291,"lane":1},{"time":13.675,"lane":2},{"time":14.059,"lane":3},{"time":14.08,"lane":0},{"time":14.101,"lane":1},{"time":15.232,"lane":2},{"time":15.253,"lane":3},{"time":15.637,"lane":0},{"time":15.659,"lane":1},{"time":16.021,"lane":2},{"time":16.043,"lane":3},{"time":16.064,"lane":0},{"time":17.216,"lane":1},{"time":17.259,"lane":2},{"time":18.027,"lane":3},{"time":18.411,"lane":0},{"time":18.752,"lane":1},{"time":18.816,"lane":2},{"time":19.2,"lane":3},{"time":19.221,"lane":0},{"time":19.989,"lane":1},{"time":20.395,"lane":2},{"time":20.416,"lane":3},{"time":21.184,"lane":0},{"time":21.568,"lane":1},{"time":21.973,"lane":2},{"time":22.229,"lane":3},{"time":22.763,"lane":0},{"time":23.083,"lane":1},{"time":23.125,"lane":2},{"time":23.147,"lane":3},{"time":23.723,"lane":0},{"time":23.765,"lane":1},{"time":23.787,"lane":2},{"time":23.957,"lane":3},{"time":24.341,"lane":0},{"time":24.725,"lane":1},{"time":25.131,"lane":2},{"time":25.152,"lane":3},{"time":25.515,"lane":0},{"time":25.536,"lane":1},{"time":25.643,"lane":2},{"time":25.92,"lane":3},{"time":26.304,"lane":0},{"time":27.499,"lane":1},{"time":27.883,"lane":2},{"time":28.245,"lane":3},{"time":28.288,"lane":0},{"time":28.544,"lane":1},{"time":29.077,"lane":2},{"time":29.461,"lane":3},{"time":29.867,"lane":0},{"time":30.123,"lane":1},{"time":30.272,"lane":2},{"time":30.976,"lane":3},{"time":31.04,"lane":0},{"time":31.445,"lane":1},{"time":31.616,"lane":2},{"time":31.659,"lane":3},{"time":31.829,"lane":0},{"time":31.851,"lane":1},{"time":32.619,"lane":2},{"time":33.024,"lane":3},{"time":33.237,"lane":0},{"time":33.813,"lane":1},{"time":34.795,"lane":2},{"time":34.816,"lane":3},{"time":34.859,"lane":0},{"time":35.008,"lane":1},{"time":35.392,"lane":2},{"time":36.203,"lane":3},{"time":36.416,"lane":0},{"time":36.437,"lane":1},{"time":36.971,"lane":2},{"time":37.952,"lane":3},{"time":37.973,"lane":0},{"time":38.144,"lane":1},{"time":38.165,"lane":2},{"time":39.552,"lane":3},{"time":39.573,"lane":0},{"time":40.128,"lane":1},{"time":40.747,"lane":2},{"time":41.173,"lane":3},{"time":41.707,"lane":0},{"time":42.432,"lane":1},{"time":42.752,"lane":2},{"time":43.285,"lane":3},{"time":44.053,"lane":0},{"time":44.075,"lane":1},{"time":44.459,"lane":2},{"time":44.48,"lane":3},{"time":44.864,"lane":0},{"time":44.885,"lane":1},{"time":45.568,"lane":2},{"time":45.653,"lane":3},{"time":46.059,"lane":0},{"time":46.827,"lane":1},{"time":47.211,"lane":2},{"time":47.232,"lane":3},{"time":47.253,"lane":0},{"time":47.616,"lane":1},{"time":47.637,"lane":2},{"time":48.021,"lane":3},{"time":48.384,"lane":0},{"time":48.427,"lane":1},{"time":48.768,"lane":2},{"time":48.811,"lane":3},{"time":49.984,"lane":0},{"time":50.368,"lane":1},{"time":50.411,"lane":2},{"time":50.795,"lane":3},{"time":51.179,"lane":0},{"time":51.349,"lane":1},{"time":51.371,"lane":2},{"time":51.435,"lane":3},{"time":51.499,"lane":0},{"time":52.288,"lane":1},{"time":52.352,"lane":2},{"time":52.373,"lane":3},{"time":53.141,"lane":0},{"time":53.547,"lane":1},{"time":53.568,"lane":2},{"time":55.104,"lane":3},{"time":55.125,"lane":0},{"time":55.509,"lane":1},{"time":55.531,"lane":2},{"time":55.915,"lane":3},{"time":56.299,"lane":0},{"time":56.704,"lane":1},{"time":57.109,"lane":2},{"time":58.091,"lane":3},{"time":58.475,"lane":0},{"time":58.496,"lane":1},{"time":58.645,"lane":2},{"time":59.072,"lane":3},{"time":59.883,"lane":0},{"time":60.117,"lane":1},{"time":60.267,"lane":2},{"time":60.651,"lane":3},{"time":61.653,"lane":0},{"time":61.675,"lane":1},{"time":61.845,"lane":2},{"time":62.229,"lane":3},{"time":62.976,"lane":0},{"time":63.019,"lane":1},{"time":63.04,"lane":2},{"time":63.403,"lane":3},{"time":63.424,"lane":0},{"time":64.597,"lane":1},{"time":64.619,"lane":2},{"time":64.725,"lane":3},{"time":64.832,"lane":0},{"time":66.432,"lane":1},{"time":67.093,"lane":2},{"time":67.136,"lane":3},{"time":67.755,"lane":0},{"time":68.139,"lane":1},{"time":68.16,"lane":2},{"time":68.8,"lane":3},{"time":68.843,"lane":0},{"time":68.928,"lane":1},{"time":68.949,"lane":2},{"time":69.333,"lane":3},{"time":69.504,"lane":0},{"time":69.525,"lane":1},{"time":69.547,"lane":2},{"time":69.739,"lane":3},{"time":70.912,"lane":0},{"time":71.125,"lane":1},{"time":72.704,"lane":2},{"time":72.896,"lane":3},{"time":74.091,"lane":0},{"time":74.325,"lane":1},{"time":75.861,"lane":2},{"time":76.053,"lane":3},{"time":77.461,"lane":0},{"time":78.635,"lane":1},{"time":79.061,"lane":2},{"time":79.211,"lane":3},{"time":80.213,"lane":0},{"time":80.341,"lane":1},{"time":80.64,"lane":2},{"time":82.219,"lane":3},{"time":82.24,"lane":0},{"time":82.368,"lane":1},{"time":83.797,"lane":2},{"time":83.819,"lane":3},{"time":85.376,"lane":0},{"time":85.525,"lane":1},{"time":86.037,"lane":2},{"time":86.699,"lane":3},{"time":86.72,"lane":0},{"time":88.533,"lane":1},{"time":88.683,"lane":2},{"time":88.811,"lane":3},{"time":88.875,"lane":0},{"time":90.112,"lane":1},{"time":90.261,"lane":2},{"time":91.456,"lane":3},{"time":91.691,"lane":0},{"time":91.712,"lane":1},{"time":92.373,"lane":2},{"time":92.416,"lane":3},{"time":94.592,"lane":0},{"time":94.997,"lane":1},{"time":95.616,"lane":2},{"time":95.979,"lane":3},{"time":96,"lane":0},{"time":96.363,"lane":1},{"time":96.384,"lane":2},{"time":96.405,"lane":3},{"time":97.365,"lane":0},{"time":97.664,"lane":1},{"time":97.685,"lane":2},{"time":97.771,"lane":3},{"time":98.517,"lane":0},{"time":98.539,"lane":1},{"time":98.56,"lane":2},{"time":98.944,"lane":3},{"time":99.541,"lane":0},{"time":99.563,"lane":1},{"time":100.523,"lane":2},{"time":100.864,"lane":3},{"time":100.885,"lane":0},{"time":100.928,"lane":1},{"time":100.949,"lane":2},{"time":101.312,"lane":3},{"time":101.717,"lane":0},{"time":101.931,"lane":1},{"time":102.485,"lane":2},{"time":102.507,"lane":3},{"time":102.592,"lane":0},{"time":102.613,"lane":1},{"time":102.72,"lane":2},{"time":103.637,"lane":3},{"time":103.659,"lane":0},{"time":103.68,"lane":1},{"time":104.427,"lane":2},{"time":104.469,"lane":3},{"time":105.088,"lane":0},{"time":105.259,"lane":1},{"time":105.643,"lane":2},{"time":106.048,"lane":3},{"time":106.069,"lane":0},{"time":106.837,"lane":1},{"time":107.221,"lane":2},{"time":107.243,"lane":3},{"time":107.413,"lane":0},{"time":107.456,"lane":1},{"time":107.627,"lane":2},{"time":108.779,"lane":3},{"time":108.821,"lane":0},{"time":109.013,"lane":1},{"time":109.035,"lane":2},{"time":109.611,"lane":3},{"time":110.592,"lane":0},{"time":110.635,"lane":1},{"time":110.656,"lane":2},{"time":110.784,"lane":3},{"time":111.189,"lane":0},{"time":112.213,"lane":1},{"time":113.749,"lane":2},{"time":113.941,"lane":3},{"time":114.112,"lane":0},{"time":115.349,"lane":1},{"time":115.925,"lane":2},{"time":116.544,"lane":3},{"time":116.949,"lane":0},{"time":116.971,"lane":1},{"time":117.099,"lane":2},{"time":118.549,"lane":3},{"time":120.128,"lane":0},{"time":120.256,"lane":1},{"time":120.277,"lane":2},{"time":121.685,"lane":3},{"time":121.707,"lane":0},{"time":123.264,"lane":1},{"time":123.285,"lane":2},{"time":123.819,"lane":3},{"time":124.587,"lane":0},{"time":124.608,"lane":1},{"time":124.992,"lane":2},{"time":126.443,"lane":3},{"time":126.571,"lane":0},{"time":128.021,"lane":1},{"time":128.149,"lane":2},{"time":129.344,"lane":3},{"time":129.579,"lane":0},{"time":129.6,"lane":1},{"time":129.728,"lane":2},{"time":130.965,"lane":3},{"time":134.464,"lane":0},{"time":134.869,"lane":1},{"time":135.253,"lane":2},{"time":135.659,"lane":3},{"time":136.043,"lane":0},{"time":136.064,"lane":1},{"time":136.832,"lane":2},{"time":136.853,"lane":3},{"time":137.216,"lane":0},{"time":137.237,"lane":1},{"time":137.621,"lane":2},{"time":137.643,"lane":3},{"time":138.027,"lane":0},{"time":138.411,"lane":1},{"time":138.432,"lane":2},{"time":138.816,"lane":3}]
