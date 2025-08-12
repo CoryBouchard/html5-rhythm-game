@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rhythm Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+            background-color: #1a1a2e;
+        }
+        .key {
+            transition: all 0.07s ease;
+            border-bottom-width: 8px;
+        }
+        .key.pressed {
+            transform: scale(0.95);
+            border-bottom-width: 4px;
+            filter: brightness(1.2);
+        }
+        #game-container {
+            touch-action: manipulation;
+        }
+        .feedback {
+            animation: fadeOutUp 0.5s forwards;
+        }
+        @keyframes fadeOutUp {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+
+    <div id="game-container" class="w-full max-w-md mx-auto text-center">
+        <div id="start-screen" class="p-8">
+            <h1 class="text-5xl font-bold mb-4 text-cyan-400">Rhythm Master</h1>
+            <p class="text-lg mb-8 text-gray-300">Tap to the beat of the music!</p>
+            <div class="mb-6">
+                <label for="song-select" class="block mb-2 text-sm font-medium text-gray-400">Select a Song:</label>
+                <select id="song-select" class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block w-full p-2.5">
+                    <!-- Song options will be populated by JS -->
+                </select>
+            </div>
+            <button id="start-button" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg text-xl transition duration-300 transform hover:scale-105">
+                Start Game
+            </button>
+             <div class="mt-8 text-sm text-gray-500">
+                <p>Use keys: D, F, J, K</p>
+            </div>
+        </div>
+
+        <div id="game-screen" class="hidden relative">
+            <div id="ui-overlay" class="absolute top-0 left-0 w-full p-4 z-20 flex justify-between items-start">
+                <div>
+                    <p class="text-lg font-semibold">Score: <span id="score">0</span></p>
+                </div>
+                <div class="text-right">
+                    <p class="text-3xl font-bold text-cyan-400">Combo: <span id="combo">0</span></p>
+                </div>
+            </div>
+
+            <canvas id="gameCanvas" class="bg-gray-800 rounded-lg shadow-2xl"></canvas>
+            
+            <div id="feedback-container" class="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+                 {/* Feedback text like 'Perfect', 'Miss' will appear here */}
+            </div>
+
+            <div id="key-press-indicators" class="w-full mt-2 grid grid-cols-4 gap-2">
+                <div id="key-d" class="key bg-pink-500 border-pink-700 rounded-lg p-4 h-24 flex items-center justify-center text-2xl font-bold">D</div>
+                <div id="key-f" class="key bg-purple-500 border-purple-700 rounded-lg p-4 h-24 flex items-center justify-center text-2xl font-bold">F</div>
+                <div id="key-j" class="key bg-blue-500 border-blue-700 rounded-lg p-4 h-24 flex items-center justify-center text-2xl font-bold">J</div>
+                <div id="key-k" class="key bg-green-500 border-green-700 rounded-lg p-4 h-24 flex items-center justify-center text-2xl font-bold">K</div>
+            </div>
+        </div>
+        
+        <div id="end-screen" class="hidden p-8">
+            <h2 class="text-4xl font-bold mb-2">Game Over</h2>
+            <p class="text-2xl mb-4">Final Score: <span id="final-score" class="text-cyan-400 font-bold">0</span></p>
+            <p class="text-xl mb-6">Max Combo: <span id="max-combo" class="text-cyan-400 font-bold">0</span></p>
+            <button id="restart-button" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg text-xl transition duration-300 transform hover:scale-105">
+                Play Again
+            </button>
+        </div>
+
+    </div>
+
+    <audio id="game-audio" preload="auto"></audio>
+
+    <script>
+        // --- DOM Elements ---
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+        const songSelect = document.getElementById('song-select');
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const scoreDisplay = document.getElementById('score');
+        const comboDisplay = document.getElementById('combo');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const maxComboDisplay = document.getElementById('max-combo');
+        const feedbackContainer = document.getElementById('feedback-container');
+        
+        const gameAudio = document.getElementById('game-audio');
+
+        // --- Game Configuration ---
+        const lanes = 4;
+        const tileHeight = 50;
+        const tileSpeed = 500; // Pixels per second
+        
+        const keyMap = { 'd': 0, 'f': 1, 'j': 2, 'k': 3 };
+        const keyElements = {
+            'd': document.getElementById('key-d'),
+            'f': document.getElementById('key-f'),
+            'j': document.getElementById('key-j'),
+            'k': document.getElementById('key-k'),
+        };
+        const laneColors = ['#ff3d8b', '#a33dff', '#3d91ff', '#3dff8b'];
+
+        // --- Hit Windows (in seconds) ---
+        const hitWindows = {
+            perfect: 0.05,
+            great: 0.1,
+            good: 0.15,
+            miss: 0.2
+        };
+
+        const scores = {
+            perfect: 100,
+            great: 75,
+            good: 50,
+            miss: 0
+        };
+
+        // --- Game State ---
+        let score = 0;
+        let combo = 0;
+        let maxCombo = 0;
+        let tiles = [];
+        let upcomingTiles = [];
+        let currentSong;
+        let audioStartTime = 0;
+        let isPlaying = false;
+        let animationFrameId;
+
+        // --- Song Data ---
+        const songs = [
+            {
+                title: "Upbeat Funk",
+                artist: "RoyaltyFreeMusic",
+                url: "https://www.bensound.com/bensound-music/bensound-funkyelement.mp3",
+                bpm: 120,
+                beatmap: [
+                    { time: 2.0, lane: 0 }, { time: 2.5, lane: 1 }, { time: 3.0, lane: 2 }, { time: 3.5, lane: 3 },
+                    { time: 4.0, lane: 0 }, { time: 4.25, lane: 1 }, { time: 4.5, lane: 0 }, { time: 4.75, lane: 1 },
+                    { time: 5.0, lane: 2 }, { time: 5.25, lane: 3 }, { time: 5.5, lane: 2 }, { time: 5.75, lane: 3 },
+                    { time: 6.0, lane: 0 }, { time: 6.5, lane: 2 }, { time: 7.0, lane: 1 }, { time: 7.5, lane: 3 },
+                    { time: 8.0, lane: 0 }, { time: 8.0, lane: 3 }, { time: 8.5, lane: 1 }, { time: 8.5, lane: 2 },
+                    { time: 9.0, lane: 0 }, { time: 9.25, lane: 1 }, { time: 9.5, lane: 2 }, { time: 9.75, lane: 3 },
+                    { time: 10.0, lane: 0 }, { time: 10.125, lane: 1 }, { time: 10.25, lane: 2 }, { time: 10.375, lane: 3 },
+                    { time: 10.5, lane: 0 }, { time: 10.625, lane: 1 }, { time: 10.75, lane: 2 }, { time: 10.875, lane: 3 },
+                    { time: 11.0, lane: 0 }, { time: 11.5, lane: 1 }, { time: 12.0, lane: 2 }, { time: 12.5, lane: 3 },
+                    { time: 13.0, lane: 0 }, { time: 13.0, lane: 1 },
+                    { time: 14.0, lane: 2 }, { time: 14.0, lane: 3 },
+                    { time: 15.0, lane: 0 }, { time: 15.25, lane: 1 }, { time: 15.5, lane: 2 }, { time: 15.75, lane: 3 },
+                    { time: 16.0, lane: 0 }, { time: 16.0, lane: 3 }, { time: 16.5, lane: 1 }, { time: 16.5, lane: 2 },
+                    { time: 17.0, lane: 0 }, { time: 17.5, lane: 2 }, { time: 18.0, lane: 1 }, { time: 18.5, lane: 3 },
+                    { time: 19.0, lane: 0 }, { time: 19.0, lane: 1 }, { time: 19.5, lane: 2 }, { time: 19.5, lane: 3 },
+                    { time: 20.0, lane: 0 }, { time: 20.25, lane: 2 }, { time: 20.5, lane: 0 }, { time: 20.75, lane: 2 },
+                    { time: 21.0, lane: 1 }, { time: 21.25, lane: 3 }, { time: 21.5, lane: 1 }, { time: 21.75, lane: 3 },
+                    { time: 22.0, lane: 0 }, { time: 22.5, lane: 3 }, { time: 23.0, lane: 1 }, { time: 23.5, lane: 2 },
+                    { time: 24.0, lane: 0 }, { time: 24.25, lane: 1 }, { time: 24.5, lane: 2 }, { time: 24.75, lane: 3 },
+                    { time: 25.0, lane: 3 }, { time: 25.25, lane: 2 }, { time: 25.5, lane: 1 }, { time: 25.75, lane: 0 },
+                    { time: 26.0, lane: 0 }, { time: 26.125, lane: 1 }, { time: 26.25, lane: 0 }, { time: 26.375, lane: 1 },
+                    { time: 26.5, lane: 2 }, { time: 26.625, lane: 3 }, { time: 26.75, lane: 2 }, { time: 26.875, lane: 3 },
+                    { time: 27.0, lane: 0 }, { time: 27.0, lane: 2 }, { time: 27.5, lane: 1 }, { time: 27.5, lane: 3 },
+                    { time: 28.0, lane: 0 }, { time: 28.0, lane: 3 }, { time: 28.5, lane: 1 }, { time: 28.5, lane: 2 },
+                    { time: 29.0, lane: 0 }, { time: 29.5, lane: 1 }, { time: 30.0, lane: 2 }, { time: 30.5, lane: 3 },
+                    { time: 31.0, lane: 0 }, { time: 31.25, lane: 1 }, { time: 31.5, lane: 0 }, { time: 31.75, lane: 1 },
+                    { time: 32.0, lane: 2 }, { time: 32.25, lane: 3 }, { time: 32.5, lane: 2 }, { time: 32.75, lane: 3 },
+                    { time: 33.0, lane: 0 }, { time: 33.5, lane: 2 }, { time: 34.0, lane: 1 }, { time: 34.5, lane: 3 },
+                    { time: 35.0, lane: 0 }, { time: 35.0, lane: 3 }, { time: 35.5, lane: 1 }, { time: 35.5, lane: 2 },
+                    { time: 36.0, lane: 0 }, { time: 36.25, lane: 1 }, { time: 36.5, lane: 2 }, { time: 36.75, lane: 3 },
+                    { time: 37.0, lane: 0 }, { time: 37.125, lane: 1 }, { time: 37.25, lane: 2 }, { time: 37.375, lane: 3 },
+                    { time: 37.5, lane: 0 }, { time: 37.625, lane: 1 }, { time: 37.75, lane: 2 }, { time: 37.875, lane: 3 },
+                    { time: 38.0, lane: 0 }, { time: 38.5, lane: 1 }, { time: 39.0, lane: 2 }, { time: 39.5, lane: 3 },
+                    { time: 40.0, lane: 0 }, { time: 40.0, lane: 1 }, { time: 41.0, lane: 2 }, { time: 41.0, lane: 3 },
+                    { time: 42.0, lane: 0 }, { time: 42.25, lane: 1 }, { time: 42.5, lane: 2 }, { time: 42.75, lane: 3 },
+                    { time: 43.0, lane: 0 }, { time: 43.0, lane: 3 }, { time: 43.5, lane: 1 }, { time: 43.5, lane: 2 },
+                    { time: 44.0, lane: 0 }, { time: 44.5, lane: 1 }, { time: 45.0, lane: 2 }, { time: 45.5, lane: 3 },
+                    { time: 46.0, lane: 0 }, { time: 46.25, lane: 1 }, { time: 46.5, lane: 0 }, { time: 46.75, lane: 1 },
+                    { time: 47.0, lane: 2 }, { time: 47.25, lane: 3 }, { time: 47.5, lane: 2 }, { time: 47.75, lane: 3 },
+                    { time: 48.0, lane: 0 }, { time: 48.5, lane: 2 }, { time: 49.0, lane: 1 }, { time: 49.5, lane: 3 },
+                    { time: 50.0, lane: 0 }, { time: 50.0, lane: 3 }, { time: 50.5, lane: 1 }, { time: 50.5, lane: 2 },
+                    { time: 51.0, lane: 0 }, { time: 51.25, lane: 1 }, { time: 51.5, lane: 2 }, { time: 51.75, lane: 3 },
+                    { time: 52.0, lane: 0 }, { time: 52.125, lane: 1 }, { time: 52.25, lane: 2 }, { time: 52.375, lane: 3 },
+                    { time: 52.5, lane: 0 }, { time: 52.625, lane: 1 }, { time: 52.75, lane: 2 }, { time: 52.875, lane: 3 },
+                    { time: 53.0, lane: 0 }, { time: 53.5, lane: 1 }, { time: 54.0, lane: 2 }, { time: 54.5, lane: 3 },
+                    { time: 55.0, lane: 0 }, { time: 55.0, lane: 1 },
+                    { time: 56.0, lane: 2 }, { time: 56.0, lane: 3 },
+                    { time: 57.0, lane: 0 }, { time: 57.25, lane: 1 }, { time: 57.5, lane: 2 }, { time: 57.75, lane: 3 },
+                    { time: 58.0, lane: 0 }, { time: 58.0, lane: 3 }, { time: 58.5, lane: 1 }, { time: 58.5, lane: 2 },
+                    { time: 59.0, lane: 0 }, { time: 59.5, lane: 2 }, { time: 60.0, lane: 1 }, { time: 60.5, lane: 3 },
+                    { time: 61.0, lane: 0 }, { time: 61.0, lane: 1 }, { time: 61.5, lane: 2 }, { time: 61.5, lane: 3 },
+                    { time: 62.0, lane: 0 }, { time: 62.25, lane: 2 }, { time: 62.5, lane: 0 }, { time: 62.75, lane: 2 },
+                    { time: 63.0, lane: 1 }, { time: 63.25, lane: 3 }, { time: 63.5, lane: 1 }, { time: 63.75, lane: 3 },
+                    { time: 64.0, lane: 0 },
+                    { time: 64.5, lane: 3 },
+                    { time: 65.0, lane: 1 },
+                    { time: 65.5, lane: 2 },
+                    { time: 66.0, lane: 0 }, { time: 66.25, lane: 1 }, { time: 66.5, lane: 2 }, { time: 66.75, lane: 3 },
+                    { time: 67.0, lane: 3 }, { time: 67.25, lane: 2 }, { time: 67.5, lane: 1 }, { time: 67.75, lane: 0 },
+                    { time: 68.0, lane: 0 }, { time: 68.125, lane: 1 }, { time: 68.25, lane: 0 }, { time: 68.375, lane: 1 },
+                    { time: 68.5, lane: 2 }, { time: 68.625, lane: 3 }, { time: 68.75, lane: 2 }, { time: 68.875, lane: 3 },
+                    { time: 69.0, lane: 0 }, { time: 69.0, lane: 2 },
+                    { time: 69.5, lane: 1 }, { time: 69.5, lane: 3 },
+                    { time: 70.0, lane: 0 }, { time: 70.0, lane: 3 },
+                    { time: 70.5, lane: 1 }, { time: 70.5, lane: 2 },
+                    { time: 71.0, lane: 0 }, { time: 71.5, lane: 1 }, { time: 72.0, lane: 2 }, { time: 72.5, lane: 3 },
+                    { time: 73.0, lane: 0 }, { time: 73.25, lane: 1 }, { time: 73.5, lane: 0 }, { time: 73.75, lane: 1 },
+                    { time: 74.0, lane: 2 }, { time: 74.25, lane: 3 }, { time: 74.5, lane: 2 }, { time: 74.75, lane: 3 },
+                    { time: 75.0, lane: 0 }, { time: 75.5, lane: 2 }, { time: 76.0, lane: 1 }, { time: 76.5, lane: 3 },
+                    { time: 77.0, lane: 0 }, { time: 77.0, lane: 3 }, { time: 77.5, lane: 1 }, { time: 77.5, lane: 2 },
+                    { time: 78.0, lane: 0 }, { time: 78.25, lane: 1 }, { time: 78.5, lane: 2 }, { time: 78.75, lane: 3 },
+                    { time: 79.0, lane: 0 }, { time: 79.125, lane: 1 }, { time: 79.25, lane: 2 }, { time: 79.375, lane: 3 },
+                    { time: 79.5, lane: 0 }, { time: 79.625, lane: 1 }, { time: 79.75, lane: 2 }, { time: 79.875, lane: 3 },
+                    { time: 80.0, lane: 0 }, { time: 80.5, lane: 1 }, { time: 81.0, lane: 2 }, { time: 81.5, lane: 3 },
+                    { time: 82.0, lane: 0 }, { time: 82.0, lane: 1 },
+                    { time: 83.0, lane: 2 }, { time: 83.0, lane: 3 },
+                    { time: 84.0, lane: 0 }, { time: 84.25, lane: 1 }, { time: 84.5, lane: 2 }, { time: 84.75, lane: 3 },
+                    { time: 85.0, lane: 0 }, { time: 85.0, lane: 3 }, { time: 85.5, lane: 1 }, { time: 85.5, lane: 2 },
+                    { time: 86.0, lane: 0 }, { time: 86.5, lane: 1 }, { time: 87.0, lane: 0 }, { time: 87.5, lane: 1 },
+                    { time: 88.0, lane: 2 }, { time: 88.5, lane: 3 }, { time: 89.0, lane: 2 }, { time: 89.5, lane: 3 },
+                    { time: 90.0, lane: 0 }, { time: 90.0, lane: 1 }, { time: 90.0, lane: 2 }, { time: 90.0, lane: 3 },
+                    { time: 91.0, lane: 0 }, { time: 91.5, lane: 1 }, { time: 92.0, lane: 2 }, { time: 92.5, lane: 3 },
+                    { time: 93.0, lane: 0 }, { time: 93.25, lane: 1 }, { time: 93.5, lane: 2 }, { time: 93.75, lane: 3 },
+                    { time: 94.0, lane: 3 }, { time: 94.25, lane: 2 }, { time: 94.5, lane: 1 }, { time: 94.75, lane: 0 },
+                    { time: 95.0, lane: 0 }, { time: 95.0, lane: 2 }, { time: 95.5, lane: 1 }, { time: 95.5, lane: 3 },
+                    { time: 96.0, lane: 0 }, { time: 96.5, lane: 3 }, { time: 97.0, lane: 1 }, { time: 97.5, lane: 2 },
+                    { time: 98.0, lane: 0 }, { time: 98.125, lane: 1 }, { time: 98.25, lane: 2 }, { time: 98.375, lane: 3 },
+                    { time: 98.5, lane: 0 }, { time: 98.625, lane: 1 }, { time: 98.75, lane: 2 }, { time: 98.875, lane: 3 },
+                    { time: 99.0, lane: 0 }, { time: 99.0, lane: 3 },
+                    { time: 99.5, lane: 1 }, { time: 99.5, lane: 2 },
+                    { time: 100.0, lane: 0 }, { time: 100.5, lane: 1 }, { time: 101.0, lane: 2 }, { time: 101.5, lane: 3 },
+                    { time: 102.0, lane: 0 }, { time: 102.0, lane: 1 }, { time: 102.5, lane: 2 }, { time: 102.5, lane: 3 },
+                    { time: 103.0, lane: 0 }, { time: 103.5, lane: 2 }, { time: 104.0, lane: 1 }, { time: 104.5, lane: 3 },
+                    { time: 105.0, lane: 0 }, { time: 105.25, lane: 3 }, { time: 105.5, lane: 1 }, { time: 105.75, lane: 2 },
+                    { time: 106.0, lane: 0 }, { time: 106.5, lane: 1 }, { time: 107.0, lane: 2 }, { time: 107.5, lane: 3 },
+                    { time: 108.0, lane: 0 }, { time: 108.0, lane: 2 }, { time: 108.5, lane: 1 }, { time: 108.5, lane: 3 },
+                    { time: 109.0, lane: 0 }, { time: 109.25, lane: 1 }, { time: 109.5, lane: 2 }, { time: 109.75, lane: 3 },
+                    { time: 110.0, lane: 0 }, { time: 110.0, lane: 3 }, { time: 110.5, lane: 1 }, { time: 110.5, lane: 2 },
+                    { time: 111.0, lane: 0 }, { time: 111.5, lane: 2 }, { time: 112.0, lane: 1 }, { time: 112.5, lane: 3 },
+                    { time: 113.0, lane: 0 }, { time: 113.0, lane: 1 }, { time: 113.5, lane: 2 }, { time: 113.5, lane: 3 },
+                    { time: 114.0, lane: 0 }, { time: 114.25, lane: 2 }, { time: 114.5, lane: 0 }, { time: 114.75, lane: 2 },
+                    { time: 115.0, lane: 1 }, { time: 115.25, lane: 3 }, { time: 115.5, lane: 1 }, { time: 115.75, lane: 3 },
+                    { time: 116.0, lane: 0 }, { time: 116.5, lane: 3 }, { time: 117.0, lane: 1 }, { time: 117.5, lane: 2 },
+                    { time: 118.0, lane: 0 }, { time: 118.25, lane: 1 }, { time: 118.5, lane: 2 }, { time: 118.75, lane: 3 },
+                    { time: 119.0, lane: 3 }, { time: 119.25, lane: 2 }, { time: 119.5, lane: 1 }, { time: 119.75, lane: 0 },
+                    { time: 120.0, lane: 0 }, { time: 120.125, lane: 1 }, { time: 120.25, lane: 0 }, { time: 120.375, lane: 1 },
+                    { time: 120.5, lane: 2 }, { time: 120.625, lane: 3 }, { time: 120.75, lane: 2 }, { time: 120.875, lane: 3 },
+                    { time: 121.0, lane: 0 }, { time: 121.0, lane: 2 }, { time: 121.5, lane: 1 }, { time: 121.5, lane: 3 },
+                    { time: 122.0, lane: 0 }, { time: 122.0, lane: 3 }, { time: 122.5, lane: 1 }, { time: 122.5, lane: 2 },
+                    { time: 123.0, lane: 0 }, { time: 123.5, lane: 1 }, { time: 124.0, lane: 2 }, { time: 124.5, lane: 3 },
+                    { time: 125.0, lane: 0 }, { time: 125.25, lane: 1 }, { time: 125.5, lane: 0 }, { time: 125.75, lane: 1 },
+                    { time: 126.0, lane: 2 }, { time: 126.25, lane: 3 }, { time: 126.5, lane: 2 }, { time: 126.75, lane: 3 },
+                    { time: 127.0, lane: 0 }, { time: 127.5, lane: 2 }, { time: 128.0, lane: 1 }, { time: 128.5, lane: 3 },
+                    { time: 129.0, lane: 0 }, { time: 129.0, lane: 3 }, { time: 129.5, lane: 1 }, { time: 129.5, lane: 2 },
+                    { time: 130.0, lane: 0 }, { time: 130.25, lane: 1 }, { time: 130.5, lane: 2 }, { time: 130.75, lane: 3 },
+                    { time: 131.0, lane: 0 }, { time: 131.125, lane: 1 }, { time: 131.25, lane: 2 }, { time: 131.375, lane: 3 },
+                    { time: 131.5, lane: 0 }, { time: 131.625, lane: 1 }, { time: 131.75, lane: 2 }, { time: 131.875, lane: 3 },
+                    { time: 132.0, lane: 0 }, { time: 132.5, lane: 1 }, { time: 133.0, lane: 2 }, { time: 133.5, lane: 3 },
+                    { time: 134.0, lane: 0 }, { time: 134.0, lane: 1 },
+                    { time: 135.0, lane: 2 }, { time: 135.0, lane: 3 },
+                    { time: 136.0, lane: 0 }, { time: 136.25, lane: 1 }, { time: 136.5, lane: 2 }, { time: 136.75, lane: 3 },
+                    { time: 137.0, lane: 0 }, { time: 137.0, lane: 3 }, { time: 137.5, lane: 1 }, { time: 137.5, lane: 2 },
+                    { time: 138.0, lane: 0 }, { time: 138.5, lane: 2 }, { time: 139.0, lane: 1 }, { time: 139.5, lane: 3 },
+                    { time: 140.0, lane: 0 }, { time: 140.0, lane: 1 }, { time: 140.5, lane: 2 }, { time: 140.5, lane: 3 },
+                    { time: 141.0, lane: 0 }, { time: 141.25, lane: 2 }, { time: 141.5, lane: 0 }, { time: 141.75, lane: 2 },
+                    { time: 142.0, lane: 1 }, { time: 142.25, lane: 3 }, { time: 142.5, lane: 1 }, { time: 142.75, lane: 3 },
+                    { time: 143.0, lane: 0 },
+                    { time: 143.5, lane: 3 },
+                    { time: 144.0, lane: 1 },
+                    { time: 144.5, lane: 2 },
+                    { time: 145.0, lane: 0 }, { time: 145.25, lane: 1 }, { time: 145.5, lane: 2 }, { time: 145.75, lane: 3 },
+                    { time: 146.0, lane: 3 }, { time: 146.25, lane: 2 }, { time: 146.5, lane: 1 }, { time: 146.75, lane: 0 },
+                    { time: 147.0, lane: 0 }, { time: 147.125, lane: 1 }, { time: 147.25, lane: 0 }, { time: 147.375, lane: 1 },
+                    { time: 147.5, lane: 2 }, { time: 147.625, lane: 3 }, { time: 147.75, lane: 2 }, { time: 147.875, lane: 3 },
+                    { time: 148.0, lane: 0 }, { time: 148.0, lane: 2 },
+                    { time: 148.5, lane: 1 }, { time: 148.5, lane: 3 },
+                    { time: 149.0, lane: 0 }, { time: 149.0, lane: 3 },
+                    { time: 149.5, lane: 1 }, { time: 149.5, lane: 2 },
+                    { time: 150.0, lane: 0 }, { time: 150.5, lane: 1 }, { time: 151.0, lane: 2 }, { time: 151.5, lane: 3 },
+                    { time: 152.0, lane: 0 }, { time: 152.25, lane: 1 }, { time: 152.5, lane: 0 }, { time: 152.75, lane: 1 },
+                    { time: 153.0, lane: 2 }, { time: 153.25, lane: 3 }, { time: 153.5, lane: 2 }, { time: 153.75, lane: 3 },
+                    { time: 154.0, lane: 0 }, { time: 154.5, lane: 2 }, { time: 155.0, lane: 1 }, { time: 155.5, lane: 3 },
+                    { time: 156.0, lane: 0 }, { time: 156.0, lane: 3 }, { time: 156.5, lane: 1 }, { time: 156.5, lane: 2 },
+                    { time: 157.0, lane: 0 }, { time: 157.25, lane: 1 }, { time: 157.5, lane: 2 }, { time: 157.75, lane: 3 },
+                    { time: 158.0, lane: 0 }, { time: 158.125, lane: 1 }, { time: 158.25, lane: 2 }, { time: 158.375, lane: 3 },
+                    { time: 158.5, lane: 0 }, { time: 158.625, lane: 1 }, { time: 158.75, lane: 2 }, { time: 158.875, lane: 3 },
+                    { time: 159.0, lane: 0 }, { time: 159.5, lane: 1 }, { time: 160.0, lane: 2 }, { time: 160.5, lane: 3 },
+                    { time: 161.0, lane: 0 }, { time: 161.0, lane: 1 },
+                    { time: 162.0, lane: 2 }, { time: 162.0, lane: 3 },
+                    { time: 163.0, lane: 0 }, { time: 163.25, lane: 1 }, { time: 163.5, lane: 2 }, { time: 163.75, lane: 3 },
+                    { time: 164.0, lane: 0 }, { time: 164.0, lane: 3 }, { time: 164.5, lane: 1 }, { time: 164.5, lane: 2 },
+                    { time: 165.0, lane: 0 }, { time: 165.5, lane: 2 }, { time: 166.0, lane: 1 }, { time: 166.5, lane: 3 },
+                    { time: 167.0, lane: 0 }, { time: 167.0, lane: 1 }, { time: 167.5, lane: 2 }, { time: 167.5, lane: 3 },
+                    { time: 168.0, lane: 0 }, { time: 168.25, lane: 2 }, { time: 168.5, lane: 0 }, { time: 168.75, lane: 2 },
+                    { time: 169.0, lane: 1 }, { time: 169.25, lane: 3 }, { time: 169.5, lane: 1 }, { time: 169.75, lane: 3 },
+                    { time: 170.0, lane: 0 },
+                    { time: 170.5, lane: 3 },
+                    { time: 171.0, lane: 1 },
+                    { time: 171.5, lane: 2 },
+                    { time: 172.0, lane: 0 }, { time: 172.25, lane: 1 }, { time: 172.5, lane: 2 }, { time: 172.75, lane: 3 },
+                    { time: 173.0, lane: 3 }, { time: 173.25, lane: 2 }, { time: 173.5, lane: 1 }, { time: 173.75, lane: 0 },
+                    { time: 174.0, lane: 0 }, { time: 174.125, lane: 1 }, { time: 174.25, lane: 0 }, { time: 174.375, lane: 1 },
+                    { time: 174.5, lane: 2 }, { time: 174.625, lane: 3 }, { time: 174.75, lane: 2 }, { time: 174.875, lane: 3 },
+                    { time: 175.0, lane: 0 }, { time: 175.0, lane: 2 },
+                    { time: 175.5, lane: 1 }, { time: 175.5, lane: 3 },
+                    { time: 176.0, lane: 0 }, { time: 176.0, lane: 3 },
+                    { time: 176.5, lane: 1 }, { time: 176.5, lane: 2 },
+                    { time: 177.0, lane: 0 }, { time: 177.5, lane: 1 }, { time: 178.0, lane: 2 }, { time: 178.5, lane: 3 },
+                    { time: 179.0, lane: 0 }, { time: 179.5, lane: 1 }, { time: 180.0, lane: 2 }, { time: 180.5, lane: 3 },
+                    { time: 181.0, lane: 0 }, { time: 181.0, lane: 1 }, { time: 181.0, lane: 2 }, { time: 181.0, lane: 3 },
+                ]
+            },
+            {
+                title: "Creative Minds",
+                artist: "RoyaltyFreeMusic",
+                url: "https://www.bensound.com/bensound-music/bensound-creativeminds.mp3",
+                bpm: 85,
+                beatmap: [
+                    { time: 2.8, lane: 0 }, { time: 3.5, lane: 1 }, { time: 4.2, lane: 2 }, { time: 4.9, lane: 3 },
+                    { time: 5.6, lane: 0 }, { time: 5.95, lane: 1 }, { time: 6.3, lane: 0 }, { time: 6.65, lane: 1 },
+                    { time: 7.0, lane: 2 }, { time: 7.35, lane: 3 }, { time: 7.7, lane: 2 }, { time: 8.05, lane: 3 },
+                    { time: 8.4, lane: 0 }, { time: 9.1, lane: 2 }, { time: 9.8, lane: 1 }, { time: 10.5, lane: 3 },
+                    { time: 11.2, lane: 0 }, { time: 11.2, lane: 3 }, { time: 11.9, lane: 1 }, { time: 11.9, lane: 2 },
+                    { time: 12.6, lane: 0 }, { time: 12.95, lane: 1 }, { time: 13.3, lane: 2 }, { time: 13.65, lane: 3 },
+                    { time: 14.0, lane: 0 }, { time: 14.175, lane: 1 }, { time: 14.35, lane: 2 }, { time: 14.525, lane: 3 },
+                    { time: 14.7, lane: 0 }, { time: 14.875, lane: 1 }, { time: 15.05, lane: 2 }, { time: 15.225, lane: 3 },
+                    { time: 15.4, lane: 0 }, { time: 16.1, lane: 1 }, { time: 16.8, lane: 2 }, { time: 17.5, lane: 3 },
+                    { time: 18.2, lane: 0 }, { time: 18.2, lane: 1 },
+                    { time: 19.6, lane: 2 }, { time: 19.6, lane: 3 },
+                    { time: 21.0, lane: 0 }, { time: 21.35, lane: 1 }, { time: 21.7, lane: 2 }, { time: 22.05, lane: 3 },
+                    { time: 22.4, lane: 0 }, { time: 22.4, lane: 3 }, { time: 23.1, lane: 1 }, { time: 23.1, lane: 2 },
+                    { time: 23.8, lane: 0 }, { time: 24.5, lane: 2 }, { time: 25.2, lane: 1 }, { time: 25.9, lane: 3 },
+                    { time: 26.6, lane: 0 }, { time: 26.6, lane: 1 }, { time: 27.3, lane: 2 }, { time: 27.3, lane: 3 },
+                    { time: 28.0, lane: 0 }, { time: 28.35, lane: 2 }, { time: 28.7, lane: 0 }, { time: 29.05, lane: 2 },
+                    { time: 29.4, lane: 1 }, { time: 29.75, lane: 3 }, { time: 30.1, lane: 1 }, { time: 30.45, lane: 3 },
+                    { time: 30.8, lane: 0 },
+                    { time: 31.5, lane: 3 },
+                    { time: 32.2, lane: 1 },
+                    { time: 32.9, lane: 2 },
+                    { time: 33.6, lane: 0 }, { time: 33.95, lane: 1 }, { time: 34.3, lane: 2 }, { time: 34.65, lane: 3 },
+                    { time: 35.0, lane: 3 }, { time: 35.35, lane: 2 }, { time: 35.7, lane: 1 }, { time: 36.05, lane: 0 },
+                    { time: 36.4, lane: 0 }, { time: 36.575, lane: 1 }, { time: 36.75, lane: 0 }, { time: 36.925, lane: 1 },
+                    { time: 37.1, lane: 2 }, { time: 37.275, lane: 3 }, { time: 37.45, lane: 2 }, { time: 37.625, lane: 3 },
+                    { time: 37.8, lane: 0 }, { time: 37.8, lane: 2 },
+                    { time: 38.5, lane: 1 }, { time: 38.5, lane: 3 },
+                    { time: 39.2, lane: 0 }, { time: 39.2, lane: 3 },
+                    { time: 39.9, lane: 1 }, { time: 39.9, lane: 2 },
+                    { time: 42.0, lane: 0 }, { time: 42.7, lane: 1 }, { time: 43.4, lane: 2 }, { time: 44.1, lane: 3 },
+                    { time: 44.8, lane: 0 }, { time: 45.15, lane: 2 }, { time: 45.5, lane: 0 }, { time: 45.85, lane: 2 },
+                    { time: 46.2, lane: 1 }, { time: 46.55, lane: 3 }, { time: 46.9, lane: 1 }, { time: 47.25, lane: 3 },
+                    { time: 47.6, lane: 0 }, { time: 47.95, lane: 1 }, { time: 48.3, lane: 2 }, { time: 48.65, lane: 3 },
+                    { time: 49.0, lane: 0 }, { time: 49.0, lane: 1 }, { time: 49.7, lane: 2 }, { time: 49.7, lane: 3 },
+                    { time: 50.4, lane: 0 }, { time: 50.75, lane: 1 }, { time: 51.1, lane: 0 }, { time: 51.45, lane: 1 },
+                    { time: 51.8, lane: 2 }, { time: 52.15, lane: 3 }, { time: 52.5, lane: 2 }, { time: 52.85, lane: 3 },
+                    { time: 53.2, lane: 0 }, { time: 53.2, lane: 2 },
+                    { time: 53.9, lane: 1 }, { time: 53.9, lane: 3 },
+                    { time: 54.6, lane: 0 }, { time: 55.3, lane: 1 }, { time: 56.0, lane: 2 }, { time: 56.7, lane: 3 },
+                    { time: 57.4, lane: 0 }, { time: 57.75, lane: 1 }, { time: 58.1, lane: 2 }, { time: 58.45, lane: 3 },
+                    { time: 58.8, lane: 0 }, { time: 58.8, lane: 3 },
+                    { time: 59.5, lane: 1 }, { time: 59.5, lane: 2 },
+                    { time: 60.2, lane: 0 }, { time: 60.9, lane: 2 }, { time: 61.6, lane: 1 }, { time: 62.3, lane: 3 },
+                    { time: 63.0, lane: 0 }, { time: 63.35, lane: 1 }, { time: 63.7, lane: 0 }, { time: 64.05, lane: 1 },
+                    { time: 64.4, lane: 2 }, { time: 64.75, lane: 3 }, { time: 65.1, lane: 2 }, { time: 65.45, lane: 3 },
+                    { time: 65.8, lane: 0 }, { time: 66.5, lane: 1 }, { time: 67.2, lane: 2 }, { time: 67.9, lane: 3 },
+                    { time: 68.6, lane: 0 }, { time: 68.6, lane: 2 }, { time: 69.3, lane: 1 }, { time: 69.3, lane: 3 },
+                    { time: 70.0, lane: 0 }, { time: 70.35, lane: 1 }, { time: 70.7, lane: 2 }, { time: 71.05, lane: 3 },
+                    { time: 71.4, lane: 0 }, { time: 71.4, lane: 3 },
+                    { time: 72.1, lane: 1 }, { time: 72.1, lane: 2 },
+                    { time: 72.8, lane: 0 }, { time: 73.5, lane: 2 }, { time: 74.2, lane: 1 }, { time: 74.9, lane: 3 },
+                    { time: 75.6, lane: 0 }, { time: 75.95, lane: 1 }, { time: 76.3, lane: 0 }, { time: 76.65, lane: 1 },
+                    { time: 77.0, lane: 2 }, { time: 77.35, lane: 3 }, { time: 77.7, lane: 2 }, { time: 78.05, lane: 3 },
+                    { time: 78.4, lane: 0 }, { time: 79.1, lane: 1 }, { time: 79.8, lane: 2 }, { time: 80.5, lane: 3 },
+                    { time: 81.2, lane: 0 }, { time: 81.2, lane: 1 }, { time: 81.9, lane: 2 }, { time: 81.9, lane: 3 },
+                    { time: 82.6, lane: 0 }, { time: 82.95, lane: 1 }, { time: 83.3, lane: 2 }, { time: 83.65, lane: 3 },
+                    { time: 84.0, lane: 0 }, { time: 84.0, lane: 3 },
+                    { time: 84.7, lane: 1 }, { time: 84.7, lane: 2 },
+                    { time: 85.4, lane: 0 }, { time: 86.1, lane: 2 }, { time: 86.8, lane: 1 }, { time: 87.5, lane: 3 },
+                    { time: 88.2, lane: 0 }, { time: 88.55, lane: 1 }, { time: 88.9, lane: 0 }, { time: 89.25, lane: 1 },
+                    { time: 89.6, lane: 2 }, { time: 89.95, lane: 3 }, { time: 90.3, lane: 2 }, { time: 90.65, lane: 3 },
+                    { time: 91.0, lane: 0 }, { time: 91.7, lane: 1 }, { time: 92.4, lane: 2 }, { time: 93.1, lane: 3 },
+                    { time: 93.8, lane: 0 }, { time: 93.8, lane: 2 }, { time: 94.5, lane: 1 }, { time: 94.5, lane: 3 },
+                    { time: 95.2, lane: 0 }, { time: 95.55, lane: 1 }, { time: 95.9, lane: 2 }, { time: 96.25, lane: 3 },
+                    { time: 96.6, lane: 0 }, { time: 96.6, lane: 3 },
+                    { time: 97.3, lane: 1 }, { time: 97.3, lane: 2 },
+                    { time: 98.0, lane: 0 }, { time: 98.7, lane: 2 }, { time: 99.4, lane: 1 }, { time: 100.1, lane: 3 },
+                    { time: 100.8, lane: 0 }, { time: 101.15, lane: 1 }, { time: 101.5, lane: 0 }, { time: 101.85, lane: 1 },
+                    { time: 102.2, lane: 2 }, { time: 102.55, lane: 3 }, { time: 102.9, lane: 2 }, { time: 103.25, lane: 3 },
+                    { time: 103.6, lane: 0 }, { time: 104.3, lane: 1 }, { time: 105.0, lane: 2 }, { time: 105.7, lane: 3 },
+                    { time: 106.4, lane: 0 }, { time: 106.4, lane: 1 }, { time: 107.1, lane: 2 }, { time: 107.1, lane: 3 },
+                    { time: 107.8, lane: 0 }, { time: 108.15, lane: 1 }, { time: 108.5, lane: 2 }, { time: 108.85, lane: 3 },
+                    { time: 109.2, lane: 0 }, { time: 109.2, lane: 3 },
+                    { time: 109.9, lane: 1 }, { time: 109.9, lane: 2 },
+                    { time: 110.6, lane: 0 }, { time: 111.3, lane: 2 }, { time: 112.0, lane: 1 }, { time: 112.7, lane: 3 },
+                    { time: 113.4, lane: 0 }, { time: 113.75, lane: 1 }, { time: 114.1, lane: 0 }, { time: 114.45, lane: 1 },
+                    { time: 114.8, lane: 2 }, { time: 115.15, lane: 3 }, { time: 115.5, lane: 2 }, { time: 115.85, lane: 3 },
+                    { time: 116.2, lane: 0 }, { time: 116.9, lane: 1 }, { time: 117.6, lane: 2 }, { time: 118.3, lane: 3 },
+                    { time: 119.0, lane: 0 }, { time: 119.0, lane: 2 }, { time: 119.7, lane: 1 }, { time: 119.7, lane: 3 },
+                    { time: 120.4, lane: 0 }, { time: 120.75, lane: 1 }, { time: 121.1, lane: 2 }, { time: 121.45, lane: 3 },
+                    { time: 121.8, lane: 0 }, { time: 121.8, lane: 3 },
+                    { time: 122.5, lane: 1 }, { time: 122.5, lane: 2 },
+                    { time: 123.2, lane: 0 }, { time: 123.9, lane: 2 }, { time: 124.6, lane: 1 }, { time: 125.3, lane: 3 },
+                    { time: 126.0, lane: 0 }, { time: 126.35, lane: 1 }, { time: 126.7, lane: 0 }, { time: 127.05, lane: 1 },
+                    { time: 127.4, lane: 2 }, { time: 127.75, lane: 3 }, { time: 128.1, lane: 2 }, { time: 128.45, lane: 3 },
+                    { time: 128.8, lane: 0 }, { time: 129.5, lane: 1 }, { time: 130.2, lane: 2 }, { time: 130.9, lane: 3 },
+                    { time: 131.6, lane: 0 }, { time: 131.6, lane: 1 }, { time: 132.3, lane: 2 }, { time: 132.3, lane: 3 },
+                    { time: 133.0, lane: 0 }, { time: 133.35, lane: 1 }, { time: 133.7, lane: 2 }, { time: 134.05, lane: 3 },
+                    { time: 134.4, lane: 0 }, { time: 134.4, lane: 3 },
+                    { time: 135.1, lane: 1 }, { time: 135.1, lane: 2 },
+                    { time: 135.8, lane: 0 }, { time: 136.5, lane: 2 }, { time: 137.2, lane: 1 }, { time: 137.9, lane: 3 },
+                    { time: 138.6, lane: 0 }, { time: 139.3, lane: 1 }, { time: 140.0, lane: 2 }, { time: 140.7, lane: 3 },
+                    { time: 141.4, lane: 0 }, { time: 141.4, lane: 1 }, { time: 141.4, lane: 2 }, { time: 141.4, lane: 3 },
+                ]
+            },
+            
+        ];
+
+        // --- Initialization ---
+        function init() {
+            setupCanvas();
+            populateSongSelect();
+            addEventListeners();
+        }
+
+        function setupCanvas() {
+            const container = document.getElementById('game-container');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = container.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = (window.innerHeight * 0.7) * dpr;
+            canvas.style.width = `${rect.width}px`;
+            canvas.style.height = `${window.innerHeight * 0.7}px`;
+            ctx.scale(dpr, dpr);
+        }
+
+        function populateSongSelect() {
+            songs.forEach((song, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${song.title} - ${song.artist}`;
+                songSelect.appendChild(option);
+            });
+        }
+
+        function addEventListeners() {
+            startButton.addEventListener('click', startGame);
+            restartButton.addEventListener('click', resetGame);
+            window.addEventListener('keydown', handleKeyPress);
+            window.addEventListener('keyup', handleKeyRelease);
+            window.addEventListener('resize', setupCanvas);
+
+            // Touch/Mouse controls
+            Object.values(keyElements).forEach((el, index) => {
+                el.addEventListener('mousedown', () => handleTouchPress(index));
+                el.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    handleTouchPress(index);
+                });
+            });
+        }
+
+        // --- Game Flow ---
+        function startGame() {
+            const selectedSongIndex = songSelect.value;
+            currentSong = songs[selectedSongIndex];
+
+            score = 0;
+            combo = 0;
+            maxCombo = 0;
+            updateUI();
+
+            upcomingTiles = [...currentSong.beatmap].sort((a, b) => a.time - b.time);
+            tiles = [];
+
+            gameAudio.src = currentSong.url;
+            gameAudio.load();
+            
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+
+            gameAudio.oncanplaythrough = () => {
+                if(gameAudio.oncanplaythrough) { 
+                    gameAudio.oncanplaythrough = null;
+                    gameAudio.play();
+                    audioStartTime = performance.now();
+                    isPlaying = true;
+                    gameLoop();
+                }
+            };
+            
+            gameAudio.onended = () => {
+                setTimeout(endGame, 1000);
+            };
+        }
+        
+        function endGame() {
+            isPlaying = false;
+            cancelAnimationFrame(animationFrameId);
+            gameScreen.classList.add('hidden');
+            finalScoreDisplay.textContent = score;
+            maxComboDisplay.textContent = maxCombo;
+            endScreen.classList.remove('hidden');
+        }
+
+        function resetGame() {
+            endScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            gameAudio.oncanplaythrough = null;
+        }
+
+        // --- Game Loop ---
+        function gameLoop() {
+            if (!isPlaying) return;
+            const currentTime = gameAudio.currentTime;
+            update(currentTime);
+            draw();
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function update(currentTime) {
+            while (upcomingTiles.length > 0 && upcomingTiles[0].time < currentTime + (canvas.clientHeight / tileSpeed)) {
+                tiles.push(upcomingTiles.shift());
+            }
+            const targetY = canvas.clientHeight - tileHeight * 1.5;
+            tiles = tiles.filter(tile => {
+                const timeDifference = tile.time - currentTime;
+                if (timeDifference < -hitWindows.miss) {
+                    combo = 0;
+                    showFeedback('Miss', 'text-red-500');
+                    return false;
+                }
+                return true;
+            });
+            updateUI();
+        }
+
+        function draw() {
+            const canvasWidth = canvas.clientWidth;
+            const canvasHeight = canvas.clientHeight;
+            const laneWidth = canvasWidth / lanes;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 1; i < lanes; i++) {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.fillRect(i * laneWidth - 1, 0, 2, canvasHeight);
+            }
+            const targetY = canvasHeight - tileHeight * 1.5;
+            ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
+            ctx.fillRect(0, targetY, canvasWidth, tileHeight);
+            ctx.strokeStyle = '#00FFFF';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(0, targetY, canvasWidth, tileHeight);
+            const currentTime = gameAudio.currentTime;
+            tiles.forEach(tile => {
+                const timeDifference = tile.time - currentTime;
+                const y = targetY - (timeDifference * tileSpeed);
+                ctx.fillStyle = laneColors[tile.lane];
+                ctx.fillRect(tile.lane * laneWidth, y, laneWidth, tileHeight);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.strokeRect(tile.lane * laneWidth, y, laneWidth, tileHeight);
+            });
+        }
+
+        // --- Input Handling ---
+        function handleKeyPress(e) {
+            if (!isPlaying || !keyMap.hasOwnProperty(e.key)) return;
+            const lane = keyMap[e.key];
+            checkHit(lane);
+            const keyEl = keyElements[e.key];
+            if (keyEl) keyEl.classList.add('pressed');
+        }
+
+        function handleKeyRelease(e) {
+            if (!keyMap.hasOwnProperty(e.key)) return;
+            const keyEl = keyElements[e.key];
+            if (keyEl) keyEl.classList.remove('pressed');
+        }
+        
+        function handleTouchPress(lane) {
+            if (!isPlaying) return;
+            checkHit(lane);
+            const key = Object.keys(keyMap).find(k => keyMap[k] === lane);
+            const keyEl = keyElements[key];
+            if (keyEl) {
+                keyEl.classList.add('pressed');
+                setTimeout(() => keyEl.classList.remove('pressed'), 100);
+            }
+        }
+
+        function checkHit(lane) {
+            const currentTime = gameAudio.currentTime;
+            let hit = false;
+            for (let i = 0; i < tiles.length; i++) {
+                const tile = tiles[i];
+                if (tile.lane === lane) {
+                    const timeDifference = Math.abs(tile.time - currentTime);
+                    if (timeDifference <= hitWindows.perfect) {
+                        score += scores.perfect;
+                        combo++;
+                        showFeedback('Perfect!', 'text-cyan-400');
+                        tiles.splice(i, 1);
+                        hit = true;
+                        break;
+                    } else if (timeDifference <= hitWindows.great) {
+                        score += scores.great;
+                        combo++;
+                        showFeedback('Great!', 'text-green-400');
+                        tiles.splice(i, 1);
+                        hit = true;
+                        break;
+                    } else if (timeDifference <= hitWindows.good) {
+                        score += scores.good;
+                        combo++;
+                        showFeedback('Good', 'text-yellow-400');
+                        tiles.splice(i, 1);
+                        hit = true;
+                        break;
+                    }
+                }
+            }
+            if (hit) {
+                if (combo > maxCombo) {
+                    maxCombo = combo;
+                }
+            }
+            updateUI();
+        }
+
+        // --- UI Updates ---
+        function updateUI() {
+            scoreDisplay.textContent = score;
+            comboDisplay.textContent = combo;
+        }
+
+        function showFeedback(text, colorClass) {
+            const feedbackEl = document.createElement('div');
+            feedbackEl.textContent = text;
+            feedbackEl.className = `feedback absolute text-5xl font-bold ${colorClass} pointer-events-none`;
+            while (feedbackContainer.firstChild) {
+                feedbackContainer.removeChild(feedbackContainer.firstChild);
+            }
+            feedbackContainer.appendChild(feedbackEl);
+        }
+
+        // --- Run Initialization ---
+        init();
+
+    </script>
+</body>
+</html>
