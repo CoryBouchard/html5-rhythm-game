@@ -86,8 +86,24 @@
         <div id="end-screen" class="hidden p-8">
             <h2 class="text-4xl font-bold mb-2">Game Over</h2>
             <p class="text-2xl mb-4">Final Score: <span id="final-score" class="text-cyan-400 font-bold">0</span></p>
-            <p class="text-xl mb-6">Max Combo: <span id="max-combo" class="text-cyan-400 font-bold">0</span></p>
-            <button id="restart-button" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg text-xl transition duration-300 transform hover:scale-105">
+            <p class="text-xl mb-2">Max Combo: <span id="max-combo" class="text-cyan-400 font-bold">0</span></p>
+            
+            <!-- Leaderboard UI -->
+            <div id="leaderboard-container" class="mt-6 text-left">
+                <h3 class="text-2xl font-bold text-cyan-400 mb-2">Leaderboard</h3>
+                <ol id="leaderboard-list" class="list-decimal list-inside bg-gray-800 p-4 rounded-lg">
+                    <!-- Scores will be populated here -->
+                </ol>
+            </div>
+
+            <!-- New High Score Form -->
+            <div id="new-high-score" class="hidden mt-4">
+                <p class="text-lg text-green-400 font-bold">New High Score!</p>
+                <input type="text" id="initials-input" maxlength="4" placeholder="Enter Your Initials" class="bg-gray-800 border border-gray-700 text-white text-center rounded-lg p-2 mt-2 w-full">
+                <button id="submit-score-button" class="w-full mt-2 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">Submit</button>
+            </div>
+
+            <button id="restart-button" class="w-full mt-6 bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg text-xl transition duration-300 transform hover:scale-105">
                 Play Again
             </button>
         </div>
@@ -96,7 +112,25 @@
 
     <audio id="game-audio" preload="auto"></audio>
 
-    <script>
+    <script type="module">
+        // --- Firebase Imports ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // --- Firebase Config (REPLACE WITH YOURS) ---
+        const firebaseConfig = {
+  apiKey: "AIzaSyDNbuHP2mx-y5FYCAA3Ys76r50ei6NlpZc",
+  authDomain: "rhythm-game-leaderboard.firebaseapp.com",
+  projectId: "rhythm-game-leaderboard",
+  storageBucket: "rhythm-game-leaderboard.firebasestorage.app",
+  messagingSenderId: "993264784281",
+  appId: "1:993264784281:web:c98e9c9bc2d5d13fe97908"
+};
+
+        // --- Initialize Firebase ---
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         // --- DOM Elements ---
         const startScreen = document.getElementById('start-screen');
         const gameScreen = document.getElementById('game-screen');
@@ -104,6 +138,10 @@
         const startButton = document.getElementById('start-button');
         const restartButton = document.getElementById('restart-button');
         const songSelect = document.getElementById('song-select');
+        const leaderboardList = document.getElementById('leaderboard-list');
+        const newHighScoreContainer = document.getElementById('new-high-score');
+        const initialsInput = document.getElementById('initials-input');
+        const submitScoreButton = document.getElementById('submit-score-button');
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -159,6 +197,7 @@
         // --- Song Data ---
         const songs = [
             {
+                id: "raise-the-banner",
                 title: "Raise the Banner",
                 artist: "?",
                 url: "https://raw.githubusercontent.com/CoryBouchard/html5-rhythm-game/main/RaisetheBanner.mp3",
@@ -167,12 +206,13 @@
             },
             {
                 title: "Play the Game",
+                id: "play-the-game",
                 artist: "?",
                 url: "https://raw.githubusercontent.com/CoryBouchard/html5-rhythm-game/main/PlaytheGame.mp3",
                 bpm: 150, // You might need to adjust this
                 beatmap: [{"time":0,"lane":0},{"time":0.256,"lane":1},{"time":0.277,"lane":2},{"time":0.299,"lane":3},{"time":0.32,"lane":0},{"time":6.571,"lane":1},{"time":6.976,"lane":2},{"time":7.36,"lane":3},{"time":7.723,"lane":0},{"time":7.765,"lane":1},{"time":8.192,"lane":2},{"time":8.939,"lane":3},{"time":9.301,"lane":0},{"time":9.344,"lane":1},{"time":9.728,"lane":2},{"time":9.749,"lane":3},{"time":10.133,"lane":0},{"time":10.475,"lane":1},{"time":10.517,"lane":2},{"time":10.901,"lane":3},{"time":11.307,"lane":0},{"time":11.328,"lane":1},{"time":12.075,"lane":2},{"time":12.096,"lane":3},{"time":12.459,"lane":0},{"time":12.48,"lane":1},{"time":12.821,"lane":2},{"time":12.864,"lane":3},{"time":12.885,"lane":0},{"time":13.291,"lane":1},{"time":13.675,"lane":2},{"time":14.059,"lane":3},{"time":14.08,"lane":0},{"time":14.101,"lane":1},{"time":15.232,"lane":2},{"time":15.253,"lane":3},{"time":15.637,"lane":0},{"time":15.659,"lane":1},{"time":16.021,"lane":2},{"time":16.043,"lane":3},{"time":16.064,"lane":0},{"time":17.216,"lane":1},{"time":17.259,"lane":2},{"time":18.027,"lane":3},{"time":18.411,"lane":0},{"time":18.752,"lane":1},{"time":18.816,"lane":2},{"time":19.2,"lane":3},{"time":19.221,"lane":0},{"time":19.989,"lane":1},{"time":20.395,"lane":2},{"time":20.416,"lane":3},{"time":21.184,"lane":0},{"time":21.568,"lane":1},{"time":21.973,"lane":2},{"time":22.229,"lane":3},{"time":22.763,"lane":0},{"time":23.083,"lane":1},{"time":23.125,"lane":2},{"time":23.147,"lane":3},{"time":23.723,"lane":0},{"time":23.765,"lane":1},{"time":23.787,"lane":2},{"time":23.957,"lane":3},{"time":24.341,"lane":0},{"time":24.725,"lane":1},{"time":25.131,"lane":2},{"time":25.152,"lane":3},{"time":25.515,"lane":0},{"time":25.536,"lane":1},{"time":25.643,"lane":2},{"time":25.92,"lane":3},{"time":26.304,"lane":0},{"time":27.499,"lane":1},{"time":27.883,"lane":2},{"time":28.245,"lane":3},{"time":28.288,"lane":0},{"time":28.544,"lane":1},{"time":29.077,"lane":2},{"time":29.461,"lane":3},{"time":29.867,"lane":0},{"time":30.123,"lane":1},{"time":30.272,"lane":2},{"time":30.976,"lane":3},{"time":31.04,"lane":0},{"time":31.445,"lane":1},{"time":31.616,"lane":2},{"time":31.659,"lane":3},{"time":31.829,"lane":0},{"time":31.851,"lane":1},{"time":32.619,"lane":2},{"time":33.024,"lane":3},{"time":33.237,"lane":0},{"time":33.813,"lane":1},{"time":34.795,"lane":2},{"time":34.816,"lane":3},{"time":34.859,"lane":0},{"time":35.008,"lane":1},{"time":35.392,"lane":2},{"time":36.203,"lane":3},{"time":36.416,"lane":0},{"time":36.437,"lane":1},{"time":36.971,"lane":2},{"time":37.952,"lane":3},{"time":37.973,"lane":0},{"time":38.144,"lane":1},{"time":38.165,"lane":2},{"time":39.552,"lane":3},{"time":39.573,"lane":0},{"time":40.128,"lane":1},{"time":40.747,"lane":2},{"time":41.173,"lane":3},{"time":41.707,"lane":0},{"time":42.432,"lane":1},{"time":42.752,"lane":2},{"time":43.285,"lane":3},{"time":44.053,"lane":0},{"time":44.075,"lane":1},{"time":44.459,"lane":2},{"time":44.48,"lane":3},{"time":44.864,"lane":0},{"time":44.885,"lane":1},{"time":45.568,"lane":2},{"time":45.653,"lane":3},{"time":46.059,"lane":0},{"time":46.827,"lane":1},{"time":47.211,"lane":2},{"time":47.232,"lane":3},{"time":47.253,"lane":0},{"time":47.616,"lane":1},{"time":47.637,"lane":2},{"time":48.021,"lane":3},{"time":48.384,"lane":0},{"time":48.427,"lane":1},{"time":48.768,"lane":2},{"time":48.811,"lane":3},{"time":49.984,"lane":0},{"time":50.368,"lane":1},{"time":50.411,"lane":2},{"time":50.795,"lane":3},{"time":51.179,"lane":0},{"time":51.349,"lane":1},{"time":51.371,"lane":2},{"time":51.435,"lane":3},{"time":51.499,"lane":0},{"time":52.288,"lane":1},{"time":52.352,"lane":2},{"time":52.373,"lane":3},{"time":53.141,"lane":0},{"time":53.547,"lane":1},{"time":53.568,"lane":2},{"time":55.104,"lane":3},{"time":55.125,"lane":0},{"time":55.509,"lane":1},{"time":55.531,"lane":2},{"time":55.915,"lane":3},{"time":56.299,"lane":0},{"time":56.704,"lane":1},{"time":57.109,"lane":2},{"time":58.091,"lane":3},{"time":58.475,"lane":0},{"time":58.496,"lane":1},{"time":58.645,"lane":2},{"time":59.072,"lane":3},{"time":59.883,"lane":0},{"time":60.117,"lane":1},{"time":60.267,"lane":2},{"time":60.651,"lane":3},{"time":61.653,"lane":0},{"time":61.675,"lane":1},{"time":61.845,"lane":2},{"time":62.229,"lane":3},{"time":62.976,"lane":0},{"time":63.019,"lane":1},{"time":63.04,"lane":2},{"time":63.403,"lane":3},{"time":63.424,"lane":0},{"time":64.597,"lane":1},{"time":64.619,"lane":2},{"time":64.725,"lane":3},{"time":64.832,"lane":0},{"time":66.432,"lane":1},{"time":67.093,"lane":2},{"time":67.136,"lane":3},{"time":67.755,"lane":0},{"time":68.139,"lane":1},{"time":68.16,"lane":2},{"time":68.8,"lane":3},{"time":68.843,"lane":0},{"time":68.928,"lane":1},{"time":68.949,"lane":2},{"time":69.333,"lane":3},{"time":69.504,"lane":0},{"time":69.525,"lane":1},{"time":69.547,"lane":2},{"time":69.739,"lane":3},{"time":70.912,"lane":0},{"time":71.125,"lane":1},{"time":72.704,"lane":2},{"time":72.896,"lane":3},{"time":74.091,"lane":0},{"time":74.325,"lane":1},{"time":75.861,"lane":2},{"time":76.053,"lane":3},{"time":77.461,"lane":0},{"time":78.635,"lane":1},{"time":79.061,"lane":2},{"time":79.211,"lane":3},{"time":80.213,"lane":0},{"time":80.341,"lane":1},{"time":80.64,"lane":2},{"time":82.219,"lane":3},{"time":82.24,"lane":0},{"time":82.368,"lane":1},{"time":83.797,"lane":2},{"time":83.819,"lane":3},{"time":85.376,"lane":0},{"time":85.525,"lane":1},{"time":86.037,"lane":2},{"time":86.699,"lane":3},{"time":86.72,"lane":0},{"time":88.533,"lane":1},{"time":88.683,"lane":2},{"time":88.811,"lane":3},{"time":88.875,"lane":0},{"time":90.112,"lane":1},{"time":90.261,"lane":2},{"time":91.456,"lane":3},{"time":91.691,"lane":0},{"time":91.712,"lane":1},{"time":92.373,"lane":2},{"time":92.416,"lane":3},{"time":94.592,"lane":0},{"time":94.997,"lane":1},{"time":95.616,"lane":2},{"time":95.979,"lane":3},{"time":96,"lane":0},{"time":96.363,"lane":1},{"time":96.384,"lane":2},{"time":96.405,"lane":3},{"time":97.365,"lane":0},{"time":97.664,"lane":1},{"time":97.685,"lane":2},{"time":97.771,"lane":3},{"time":98.517,"lane":0},{"time":98.539,"lane":1},{"time":98.56,"lane":2},{"time":98.944,"lane":3},{"time":99.541,"lane":0},{"time":99.563,"lane":1},{"time":100.523,"lane":2},{"time":100.864,"lane":3},{"time":100.885,"lane":0},{"time":100.928,"lane":1},{"time":100.949,"lane":2},{"time":101.312,"lane":3},{"time":101.717,"lane":0},{"time":101.931,"lane":1},{"time":102.485,"lane":2},{"time":102.507,"lane":3},{"time":102.592,"lane":0},{"time":102.613,"lane":1},{"time":102.72,"lane":2},{"time":103.637,"lane":3},{"time":103.659,"lane":0},{"time":103.68,"lane":1},{"time":104.427,"lane":2},{"time":104.469,"lane":3},{"time":105.088,"lane":0},{"time":105.259,"lane":1},{"time":105.643,"lane":2},{"time":106.048,"lane":3},{"time":106.069,"lane":0},{"time":106.837,"lane":1},{"time":107.221,"lane":2},{"time":107.243,"lane":3},{"time":107.413,"lane":0},{"time":107.456,"lane":1},{"time":107.627,"lane":2},{"time":108.779,"lane":3},{"time":108.821,"lane":0},{"time":109.013,"lane":1},{"time":109.035,"lane":2},{"time":109.611,"lane":3},{"time":110.592,"lane":0},{"time":110.635,"lane":1},{"time":110.656,"lane":2},{"time":110.784,"lane":3},{"time":111.189,"lane":0},{"time":112.213,"lane":1},{"time":113.749,"lane":2},{"time":113.941,"lane":3},{"time":114.112,"lane":0},{"time":115.349,"lane":1},{"time":115.925,"lane":2},{"time":116.544,"lane":3},{"time":116.949,"lane":0},{"time":116.971,"lane":1},{"time":117.099,"lane":2},{"time":118.549,"lane":3},{"time":120.128,"lane":0},{"time":120.256,"lane":1},{"time":120.277,"lane":2},{"time":121.685,"lane":3},{"time":121.707,"lane":0},{"time":123.264,"lane":1},{"time":123.285,"lane":2},{"time":123.819,"lane":3},{"time":124.587,"lane":0},{"time":124.608,"lane":1},{"time":124.992,"lane":2},{"time":126.443,"lane":3},{"time":126.571,"lane":0},{"time":128.021,"lane":1},{"time":128.149,"lane":2},{"time":129.344,"lane":3},{"time":129.579,"lane":0},{"time":129.6,"lane":1},{"time":129.728,"lane":2},{"time":130.965,"lane":3},{"time":134.464,"lane":0},{"time":134.869,"lane":1},{"time":135.253,"lane":2},{"time":135.659,"lane":3},{"time":136.043,"lane":0},{"time":136.064,"lane":1},{"time":136.832,"lane":2},{"time":136.853,"lane":3},{"time":137.216,"lane":0},{"time":137.237,"lane":1},{"time":137.621,"lane":2},{"time":137.643,"lane":3},{"time":138.027,"lane":0},{"time":138.411,"lane":1},{"time":138.432,"lane":2},{"time":138.816,"lane":3}]
             },
-                        {
+            {
                 title: "Spawn Doors Detback Blues",
                 artist: "?",
                 url: "https://raw.githubusercontent.com/CoryBouchard/html5-rhythm-game/main/SpawnDoorsDetpackBlues.mp3",
