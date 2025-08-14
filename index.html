@@ -371,7 +371,7 @@
             }
             scores.forEach((entry, index) => {
                 const li = document.createElement('li');
-                li.innerHTML = `<span class="font-bold">${index + 1}. ${entry.initials}</span> - ${entry.score}`;
+                li.innerHTML = `<span class="font-bold">${entry.initials}</span> - ${entry.score}`;
                 leaderboardList.appendChild(li);
             });
         }
@@ -380,8 +380,8 @@
             const initials = initialsInput.value.trim().toUpperCase();
             if (!initials) return;
 
-            submitScoreButton.disabled = true;
-            submitScoreButton.textContent = "Submitting...";
+// Hide the form immediately to prevent multiple submissions
+            newHighScoreContainer.classList.add('hidden');
 
             const songId = currentSong.id;
             const scoresRef = collection(db, `leaderboards/${songId}/scores`);
