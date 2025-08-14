@@ -379,9 +379,9 @@
         async function saveScore() {
             const initials = initialsInput.value.trim().toUpperCase();
             if (!initials) return;
-
+newHighScoreContainer.classList.add('hidden');
 // Hide the form immediately to prevent multiple submissions
-            newHighScoreContainer.classList.add('hidden');
+ //           newHighScoreContainer.classList.add('hidden');
 
             const songId = currentSong.id;
             const scoresRef = collection(db, `leaderboards/${songId}/scores`);
@@ -392,15 +392,12 @@
                     score: score,
                     timestamp: serverTimestamp()
                 });
-                newHighScoreContainer.classList.add('hidden');
+                
                 await checkLeaderboard(); // Refresh leaderboard
             } catch (error) {
                 console.error("Error saving score:", error);
                 alert("Could not save score. Please try again.");
-            } finally {
-                submitScoreButton.disabled = false;
-                submitScoreButton.textContent = "Submit";
-            }
+            } 
         }
 
 
